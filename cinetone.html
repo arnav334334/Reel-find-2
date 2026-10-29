@@ -64,7 +64,7 @@ footer{text-align:center;padding:24px;color:var(--mu);font-size:12px}
 <button class="ib" onclick="th()" aria-label="Toggle light and dark mode">◐</button>
 </header>
 <main id="app"></main>
-<footer id="ft">Sample data. Add your TMDB key in config.js for live films, images, box office and streaming.</footer>
+<footer id="ft">Sample data. Live films, images, box office and streaming load from TMDB when a key (config.js) or the /api/tmdb proxy is available.</footer>
 <dialog id="dlg"><form method="dialog"></form></dialog>
 <aside id="chat" hidden><div id="msgs"><p>Ask in plain words, like “Ryan Gosling films directed by Damien Chazelle” or “sci-fi films from Legendary Pictures”.</p></div><form onsubmit="ask2(event)"><input id="ci" placeholder="What are you looking for?" aria-label="Ask"><button class="bt">Send</button></form></aside>
 <script src="config.js"></script>
@@ -143,11 +143,12 @@ const following=()=>`<h1>Following</h1>${FO.length?FO.map(n=>`<a class="row" hre
 function render(){const h=location.hash.slice(2).split("/").map(decodeURIComponent);$("#fw").textContent="Following"+(FO.length?" ("+FO.length+")":"");
 $("#app").innerHTML=h[0]=="film"?film(h[1],h[2]):h[0]=="person"?person(h[1]):h[0]=="following"?following():home()}
 try{document.documentElement.dataset.theme=localStorage.t||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")}catch(e){}
-const tm=async p=>{const j=K.startsWith("eyJ"),r=await fetch(TB+p+(j?"":(p.includes("?")?"&":"?")+"api_key="+K),j?{headers:{Authorization:"Bearer "+K}}:{});if(!r.ok)throw r.status;return r.json()};
+const direct=K&&!K.startsWith("YOUR_");
+const tm=async p=>{let r;if(direct){const j=K.startsWith("eyJ");r=await fetch(TB+p+(j?"":(p.includes("?")?"&":"?")+"api_key="+K),j?{headers:{Authorization:"Bearer "+K}}:{})}else{const[a,b]=p.split("?");r=await fetch("/api/tmdb?path="+encodeURIComponent(a)+(b?"&"+b:""))}if(!r.ok)throw r.status;return r.json()};
 const mk=d=>{const dr=d.credits.crew.find(c=>c.job=="Director"),ca=d.credits.cast.slice(0,4),w=(d["watch/providers"].results||{})[RG]||{},nm=a=>(a||[]).map(x=>x.provider_name);
 [dr,...ca].forEach(p=>p&&p.profile_path&&(PI[p.name]=IM+"w185"+p.profile_path));
 return{tid:d.id,id:"t"+d.id,t:d.title,y:+(d.release_date||"0").slice(0,4),g:d.genres.map(x=>x.name.replace("Science Fiction","Sci-Fi")),d:dr?dr.name:"Unknown",a:ca.map(c=>c.name),co:d.production_companies.map(c=>c.name),lb:"",bo:Math.round(d.revenue/1e6),bs:"TMDB",po:d.poster_path,imdb:d.external_ids.imdb_id,s:{Stream:nm(w.flatrate),Rent:nm(w.rent),Buy:nm(w.buy)},c:Array(20).fill(0),tr:[]}};
-(async()=>{if(!K||K.startsWith("YOUR_"))return;try{
+(async()=>{try{
 const en=async id=>mk(await tm(`/movie/${id}?append_to_response=credits,watch/providers,external_ids`));
 await Promise.all(F.map(async f=>{try{const q=(await tm(`/search/movie?query=${encodeURIComponent(f.t)}&year=${f.y}`)).results[0];if(q)Object.assign(f,await en(q.id),{id:f.id,c:f.c,lb:f.lb,tr:f.tr})}catch(e){}}));
 const have=new Set(F.map(f=>f.tid));
