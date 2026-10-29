@@ -4,7 +4,7 @@ module.exports = async (req, res) => {
   const key = process.env.TMDB_KEY;
   if (!key) return res.status(500).json({ error: "TMDB_KEY is not set" });
   const path = String(req.query.path || "");
-  if (!/^\/(search\/movie|movie\/popular|movie\/\d+)$/.test(path))
+  if (!/^\/(search\/(movie|person|company)|discover\/movie|genre\/movie\/list|movie\/(popular|top_rated|now_playing|\d+))$/.test(path))
     return res.status(400).json({ error: "Path not allowed" });
   const q = new URLSearchParams(req.query);
   q.delete("path");

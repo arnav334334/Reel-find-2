@@ -57,7 +57,7 @@ footer{text-align:center;padding:24px;color:var(--mu);font-size:12px}
 <body>
 <header>
 <a class="brand" href="#/">Cine<i>tone</i></a>
-<input id="q" type="search" placeholder="Search films or actors" aria-label="Search" oninput="S.q=this.value;go()">
+<input id="q" type="search" placeholder="Search any film" aria-label="Search" oninput="S.q=this.value;go()">
 <button class="ib" onclick="dlg()">Filters</button>
 <button class="ib" onclick="$('#chat').hidden=!$('#chat').hidden">Ask the finder</button>
 <a class="ib" id="fw" href="#/following">Following</a>
@@ -87,7 +87,7 @@ const F=[
 const $=s=>document.querySelector(s),BK=["Unbearable","Horrible","Decent","Good","Masterpiece"];
 const L=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},W=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let U=L("u",{}),FO=L("fo",[]);
-const S0={q:"",g:"",a:"",d:"",c:"",l:"",m:""};let S={...S0},M="f",TG="",TS="o";
+const S0={q:"",g:"",a:"",d:"",c:"",l:"",m:""};let S={...S0},M="f",TG="",TS="o",LIST=[],PG=1,TP=1,SORT="popular",LD=1,TK=0,TMR;const GI={},GN={},ID={};
 const seed=(n,m)=>{const w=[...Array(20)].map((_,i)=>Math.exp(-Math.pow(((i+1)/2-m)/1.6,2)/2)),s=w.reduce((a,b)=>a+b);return w.map(x=>Math.round(n*x/s))};
 F.forEach(f=>{f.c=seed(f.n,f.m);f.co=[].concat(f.co);f.tr=f.tr.map((t,i)=>({id:f.id+"."+i,t:t[0],ar:t[1].split(", "),g:t[2],c:seed(t[3],t[4]),f}))});
 const TT=F.flatMap(f=>f.tr);
@@ -108,26 +108,33 @@ const OP=[...Array(20)].map((_,i)=>(i+1)/2);
 const sv=(k,v)=>{if(!v)return;U[k]=+v;W("u",U);render()};
 const rs=k=>`<select class="sl" aria-label="Rate" onchange="sv('${k}',this.value)"><option value="">${U[k]?"You: "+U[k]:"Rate"}</option>${OP.map(v=>`<option ${U[k]==v?"selected":""}>${v}</option>`).join("")}</select>`;
 const fol=n=>{FO=FO.includes(n)?FO.filter(x=>x!=n):[...FO,n];W("fo",FO);render()};
-const ent=()=>{const u=a=>[...new Set(a)].filter(Boolean).sort();return{g:u(F.flatMap(f=>f.g)),a:u(F.flatMap(f=>f.a)),d:u(F.map(f=>f.d)),c:u(F.flatMap(f=>f.co)),l:u(F.map(f=>f.lb)),m:u(TT.map(t=>t.g))}};
+const ent=()=>{const u=a=>[...new Set(a)].filter(Boolean).sort();return{g:u(Object.keys(GI).length?Object.keys(GI):F.flatMap(f=>f.g)),a:u(F.flatMap(f=>f.a)),d:u(F.map(f=>f.d)),c:u(F.flatMap(f=>f.co)),l:u(F.map(f=>f.lb)),m:u(TT.map(t=>t.g))}};
 const fl=()=>F.filter(f=>(!S.q||(f.t+f.d+f.a.join()).toLowerCase().includes(S.q.toLowerCase()))&&(!S.g||f.g.includes(S.g))&&(!S.a||f.a.includes(S.a))&&(!S.d||f.d==S.d)&&(!S.c||f.co.includes(S.c))&&(!S.l||f.lb==S.l)&&(!S.m||f.tr.some(t=>t.g==S.m)));
-const go=()=>{location.hash.length>2?location.hash="#/":render()};
+const go=()=>{if(location.hash.length>2)location.hash="#/";clearTimeout(TMR);TMR=setTimeout(load,350)};
 const th=()=>{const r=document.documentElement,v=r.dataset.theme=="dark"?"light":"dark";r.dataset.theme=v;try{localStorage.t=v}catch(e){}};
-function dlg(){const E=ent();$("#dlg form").innerHTML=[["g","Genre"],["a","Actor"],["d","Director"],["c","Production company"],["l","Music label"],["m","Music genre"]].map(([k,n])=>`<label>${n}<select onchange="S.${k}=this.value;go()"><option value="">Any</option>${E[k].map(x=>`<option ${S[k]==x?"selected":""}>${x}</option>`).join("")}</select></label>`).join("")+`<p class="mu">Combine any filters, for example a director with an actor to find a duo.</p><button type="button" class="bt g" onclick="S={...S0};dlg();go()">Reset</button> <button class="bt" value="close">Done</button>`;$("#dlg").showModal()}
-function ask(q){let t=q.toLowerCase().replace(/sci.?fi|science fiction/g,"sci-fi"),n=0;const E=ent();
-if(!/^(also|and|add)\b/.test(t))S={...S0};
-for(const k in E){const x=E[k].find(x=>{const l=x.toLowerCase(),a=[l];if(k=="a"||k=="d")a.push(l.split(" ").pop());if(k=="c"||k=="l")a.push(l.split(" ")[0]);return a.some(w=>w.length>2&&new RegExp("\\b"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b").test(t))});if(x){S[k]=x;n++}}
-if(!n){const f=F.find(f=>t.includes(f.t.toLowerCase()));if(f){location.hash="#/film/"+f.id;return "Opening "+f.t+"."}return "I couldn’t match that. Try a genre, actor, director, studio or music label."}
-$("#q").value="";M="f";go();const R=fl();return R.length?`Found ${R.length}: ${R.map(f=>f.t).join(", ")}.`:"No film matches all of those. Try removing one filter."}
-function ask2(e){e.preventDefault();const v=$("#ci").value.trim();if(!v)return;$("#ci").value="";const m=$("#msgs");m.insertAdjacentHTML("beforeend",`<p class="u"></p>`);m.lastChild.textContent=v;m.insertAdjacentHTML("beforeend",`<p></p>`);m.lastChild.textContent=ask(v);m.scrollTop=1e9}
-const card=(f,o)=>{const s=o?sa(f):sf(f),p=pp(s.n,o?mA():mF());return `<a class="card" href="#/film/${f.id}${o?"/ost":""}">${art(f,o)}<div class="cb"><b>${o?f.t+" (Soundtrack)":f.t}</b><small>${f.y}, ${o?f.lb:f.g.join(", ")}</small><div class="pop"><i style="width:${p}%"></i></div><small>Popularity ${p}%${o?" · Score "+s.avg.toFixed(1):""}</small></div></a>`};
-function home(){const o=M=="s",R=fl().filter(f=>!o||f.tr.length).sort((a,b)=>sf(b).n-sf(a).n);
-return `<div class="top"><div class="seg"><a class="${o?"":"on"}" onclick="M='f';render()">Films</a><a class="${o?"on":""}" onclick="M='s';render()">Soundtracks</a></div><div>${Object.entries(S).filter(([k,v])=>v&&k!="q").map(([k,v])=>`<span class="chip" onclick="S.${k}='';render()">${v} ✕</span>`).join("")}</div></div>${R.length?`<div class="grid">${R.map(f=>card(f,o)).join("")}</div>`:`<p class="mu">No results. Open Filters to loosen your search.</p>`}`}
-function film(id,v){const f=F.find(x=>x.id==id);if(!f)return home();const o=v=="ost",s=sf(f),a=sa(f),G=[...new Set(f.tr.map(t=>t.g))];
+function dlg(){const E=ent();$("#dlg form").innerHTML=[["g","Genre"],["a","Actor"],["d","Director"],["c","Production company"],["l","Music label"],["m","Music genre"]].map(([k,n])=>"adc".includes(k)?`<label>${n}<input value="${S[k]}" placeholder="Type a name" onchange="S.${k}=this.value.trim();go()"></label>`:`<label>${n}<select onchange="S.${k}=this.value;go()"><option value="">Any</option>${E[k].map(x=>`<option ${S[k]==x?"selected":""}>${x}</option>`).join("")}</select></label>`).join("")+`<p class="mu">Combine any filters, for example a director with an actor to find a duo.</p><button type="button" class="bt g" onclick="S={...S0};dlg();go()">Reset</button> <button class="bt" value="close">Done</button>`;$("#dlg").showModal()}
+function ask(q){let t=" "+q.toLowerCase().replace(/sci.?fi|science fiction/g,"sci-fi")+" ";
+if(!/^\s*(also|and|add)\b/.test(t))S={...S0};
+const E=ent(),esc=x=>x.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+for(const k of["g","l","m"]){const x=E[k].find(x=>new RegExp("\\b"+esc(x)+"\\b").test(t));if(x){S[k]=x;t=t.replace(x.toLowerCase(),"")}}
+const cap=s=>s.replace(/\b\w/g,c=>c.toUpperCase()),cut=s=>cap(s.split(/\b(?:and|with|starring|featuring|directed by|made by|produced by|from|by|in|films?|movies?)\b/)[0].trim()),pick=re=>{const m=t.match(re);return m?cut(m[1]):""};
+S.c=pick(/(?:produced by|\bfrom)\s+(.+)/);if(S.c)t=t.replace(new RegExp("(?:produced by|\\bfrom)\\s+"+esc(S.c)),"");
+S.d=pick(/(?:directed by|made by|\bby)\s+(.+)/);if(S.d)t=t.replace(new RegExp("(?:directed by|made by|\\bby)\\s+"+esc(S.d)),"");
+S.a=pick(/(?:starring|featuring|\bwith)\s+(.+)/);
+if(!S.a&&/\b(films?|movies?)\b/.test(t))S.a=cut(t.replace(/^\s*(show me|find me|find|show|list|all|the)\s+/,"").trim());
+if(!(S.g||S.a||S.d||S.c||S.l||S.m))S.q=q.trim();
+$("#q").value=S.q;M="f";
+return "Searching for "+Object.values(S).filter(Boolean).join(", ")+"…"}
+async function ask2(e){e.preventDefault();const v=$("#ci").value.trim();if(!v)return;$("#ci").value="";const m=$("#msgs"),add=(t,c)=>{m.insertAdjacentHTML("beforeend",`<p class="${c||""}"></p>`);m.lastChild.textContent=t;m.scrollTop=1e9};add(v,"u");add(ask(v));if(location.hash.length>2)location.hash="#/";await load();add(LIST.length?`Found ${LIST.length}${PG<TP?"+":""}: ${LIST.slice(0,6).map(f=>f.t).join(", ")}${LIST.length>6?"…":""}.`:"Nothing matched. Try fewer filters.")}
+const card=(f,o)=>{const s=o?sa(f):sf(f),p=pp(s.n,o?mA():mF());return `<a class="card" href="#/film/${f.id}${o?"/ost":""}">${art(f,o)}<div class="cb"><b>${o?f.t+" (Soundtrack)":f.t}</b><small>${f.y}, ${o?f.lb:f.g.join(", ")}</small><div class="pop"><i style="width:${p}%"></i></div><small>${s.n?"Popularity "+p+"%":"No ratings yet"}${o?" · Score "+s.avg.toFixed(1):""}</small></div></a>`};
+function home(){const o=M=="s",R=o?fl().filter(f=>f.tr.length):LIST,flt=S.q||S.g||S.a||S.d||S.c||S.l||S.m;
+return `<div class="top"><div class="seg"><a class="${o?"":"on"}" onclick="M='f';render()">Films</a><a class="${o?"on":""}" onclick="M='s';render()">Soundtracks</a></div><div>${Object.entries(S).filter(([k,v])=>v&&k!="q").map(([k,v])=>`<span class="chip" onclick="S.${k}='';go()">${v} ✕</span>`).join("")}${!o&&!flt?`<select aria-label="Browse" onchange="SORT=this.value;load()">${[["popular","Popular"],["top_rated","Top rated"],["now_playing","Now playing"]].map(([k,n])=>`<option value="${k}" ${SORT==k?"selected":""}>${n}</option>`).join("")}</select>`:""}</div></div>${R.length?`<div class="grid">${R.map(f=>card(f,o)).join("")}</div>`:`<p class="mu">${LD?"Loading films…":"No results. Open Filters to loosen your search."}</p>`}${!o&&PG<TP&&LIST.length?`<p style="text-align:center;margin-top:28px"><button class="bt" onclick="load(1)" ${LD?"disabled":""}>${LD?"Loading…":"Load more"}</button></p>`:""}`}
+function film(id,v){let f=F.find(x=>x.id==id);if(!f&&/^t\d+$/.test(id))F.push(f={tid:+id.slice(1),id,t:"Loading…",y:"",g:[],d:"",a:[],co:[],lb:"",bo:0,po:null,c:Array(20).fill(0),tr:[]});if(!f)return home();if(f.tid&&!f.full&&!f.ld){f.ld=1;det(f).then(render).catch(()=>{})}const o=v=="ost",ld=f.tid&&!f.full,s=sf(f),a=sa(f),G=[...new Set(f.tr.map(t=>t.g))];
 const seg=`<div class="seg"><a class="${o?"":"on"}" href="#/film/${id}">Movie</a><a class="${o?"on":""}" href="#/film/${id}/ost">Soundtrack</a></div>`;
 if(!o){const bo=!f.bo?"Not reported":f.bo>=1000?"$"+(f.bo/1000).toFixed(2)+" billion":"$"+f.bo+" million";
-return `<div class="hero">${art(f)}<div>${seg}<h1>${f.t} <small>${f.y}</small></h1><p>${f.g.map(g=>`<span class="chip" onclick="S={...S0,g:'${g}'};go()">${g}</span>`).join("")}</p><p class="mu">Directed by ${pl(f.d)}<br>Starring ${f.a.map(pl).join(", ")}<br>Produced by ${f.co.map(c=>`<a onclick="S={...S0,c:'${c.replace(/'/g,"\\'")}'};go()">${c}</a>`).join(", ")}${f.imdb?` · <a href="https://www.imdb.com/title/${f.imdb}/" target="_blank" rel="noopener">IMDb</a>`:""}</p>
+return `<div class="hero">${art(f)}<div>${seg}<h1>${f.t} <small>${f.y}</small></h1><p>${f.g.map(g=>`<span class="chip" onclick="S={...S0,g:'${g}'};go()">${g}</span>`).join("")}</p>${ld?`<p class="mu">Loading cast, box office and streaming…</p>`:`<p class="mu">Directed by ${pl(f.d)}<br>Starring ${f.a.map(pl).join(", ")}<br>Produced by ${f.co.map(c=>`<a onclick="S={...S0,c:'${c.replace(/'/g,"\\'")}'};go()">${c}</a>`).join(", ")}${f.imdb?` · <a href="https://www.imdb.com/title/${f.imdb}/" target="_blank" rel="noopener">IMDb</a>`:""}</p>
 <div class="panel"><small>Worldwide box office</small><div class="big">${bo}</div><small>Source: ${f.bs||"Box Office Mojo (sample figure)"}</small></div>
-<div class="panel"><small>Where to watch legally${f.s?" ("+RG+")":""}</small>${wt(f)}<small>Availability varies by country.${f.s?" Data by JustWatch.":""}</small></div></div></div>
+<div class="panel"><small>Where to watch legally${f.s?" ("+RG+")":""}</small>${wt(f)}<small>Availability varies by country.${f.s?" Data by JustWatch.":""}</small></div>`}</div></div>
 <div class="panel"><b>What people think</b> <small>${s.n.toLocaleString()} ratings · Popularity ${pp(s.n,mF())}% of the most rated film</small><div style="margin-top:12px">${dist(s)}</div></div>
 <div class="panel"><b>Your rating</b><div class="rt" style="margin-top:10px"><input type="range" min=".5" max="10" step=".5" value="${U[f.id]||7.5}" aria-label="Your rating" oninput="this.nextElementSibling.textContent=this.value+' · '+cls(+this.value)"><b>${U[f.id]||7.5} · ${cls(U[f.id]||7.5)}</b><button class="bt" onclick="sv('${f.id}',this.parentNode.firstElementChild.value)">${U[f.id]?"Update rating":"Save rating"}</button></div></div>`}
 let T=f.tr.filter(t=>!TG||t.g==TG);T=[...T].sort((a,b)=>TS=="g"?a.g.localeCompare(b.g):TS=="r"?stt(b).avg-stt(a).avg:TS=="p"?stt(b).n-stt(a).n:0);
@@ -148,13 +155,20 @@ const tm=async p=>{let r;if(direct){const j=K.startsWith("eyJ");r=await fetch(TB
 const mk=d=>{const dr=d.credits.crew.find(c=>c.job=="Director"),ca=d.credits.cast.slice(0,4),w=(d["watch/providers"].results||{})[RG]||{},nm=a=>(a||[]).map(x=>x.provider_name);
 [dr,...ca].forEach(p=>p&&p.profile_path&&(PI[p.name]=IM+"w185"+p.profile_path));
 return{tid:d.id,id:"t"+d.id,t:d.title,y:+(d.release_date||"0").slice(0,4),g:d.genres.map(x=>x.name.replace("Science Fiction","Sci-Fi")),d:dr?dr.name:"Unknown",a:ca.map(c=>c.name),co:d.production_companies.map(c=>c.name),lb:"",bo:Math.round(d.revenue/1e6),bs:"TMDB",po:d.poster_path,imdb:d.external_ids.imdb_id,s:{Stream:nm(w.flatrate),Rent:nm(w.rent),Buy:nm(w.buy)},c:Array(20).fill(0),tr:[]}};
-(async()=>{try{
-const en=async id=>mk(await tm(`/movie/${id}?append_to_response=credits,watch/providers,external_ids`));
-await Promise.all(F.map(async f=>{try{const q=(await tm(`/search/movie?query=${encodeURIComponent(f.t)}&year=${f.y}`)).results[0];if(q)Object.assign(f,await en(q.id),{id:f.id,c:f.c,lb:f.lb,tr:f.tr})}catch(e){}}));
-const have=new Set(F.map(f=>f.tid));
-(await Promise.allSettled((await tm(`/movie/popular?region=${RG}`)).results.filter(q=>!have.has(q.id)).slice(0,12).map(q=>en(q.id)))).forEach(x=>x.value&&F.push(x.value));
-$("#ft").textContent="Film data, images and streaming availability from TMDB and JustWatch. This product uses the TMDB API but is not endorsed or certified by TMDB.";render()
-}catch(e){console.warn("TMDB unavailable, showing sample data:",e)}})();
+const lite=r=>{const y=+(r.release_date||"0").slice(0,4);let f=F.find(x=>x.tid==r.id)||F.find(x=>!x.tid&&x.t==r.title&&x.y==y);if(f){f.tid=r.id;f.po=f.po||r.poster_path;return f}
+f={tid:r.id,id:"t"+r.id,t:r.title,y,g:(r.genre_ids||[]).map(i=>GN[i]).filter(Boolean),d:"",a:[],co:[],lb:"",bo:0,po:r.poster_path,c:Array(20).fill(0),tr:[]};F.push(f);return f};
+const det=f=>tm(`/movie/${f.tid}?append_to_response=credits,watch/providers,external_ids`).then(d=>Object.assign(f,mk(d),{id:f.id,c:f.c,lb:f.lb,tr:f.tr,full:1}));
+const pid=async(n,k)=>{if(!n)return"";const key=k+n;if(!ID[key]){const x=(await tm(`/search/${k}?query=${encodeURIComponent(n)}`)).results[0];ID[key]=x?x.id:-1}return ID[key]};
+async function load(more){const my=++TK;if(more)PG++;else{PG=1;LIST=[]}LD=1;render();
+try{if(S.l||S.m){LIST=fl();TP=1}else{let p;
+if(S.q)p=`/search/movie?query=${encodeURIComponent(S.q)}&page=${PG}`;
+else if(S.g||S.a||S.d||S.c){const[a,d,c]=await Promise.all([pid(S.a,"person"),pid(S.d,"person"),pid(S.c,"company")]);
+p=[a,d,c].includes(-1)?"":`/discover/movie?sort_by=popularity.desc&page=${PG}`+(S.g?"&with_genres="+GI[S.g]:"")+(a?"&with_cast="+a:"")+(d?"&with_crew="+d:"")+(c?"&with_companies="+c:"")}
+else p=`/movie/${SORT}?page=${PG}`;
+if(p){const r=await tm(p);if(my!=TK)return;TP=r.total_pages;LIST=LIST.concat(r.results.map(lite).filter(f=>!S.q||!S.g||f.g.includes(S.g)));$("#ft").textContent="Film data, images and streaming availability from TMDB and JustWatch. This product uses the TMDB API but is not endorsed or certified by TMDB."}else TP=1}}
+catch(e){if(my!=TK)return;console.warn("TMDB unavailable, showing sample data:",e);if(!LIST.length){LIST=fl();TP=1}}
+LD=0;render()}
+(async()=>{try{(await tm("/genre/movie/list")).genres.forEach(x=>{const n=x.name.replace("Science Fiction","Sci-Fi");GI[n]=x.id;GN[x.id]=n})}catch(e){}load()})();
 addEventListener("hashchange",()=>{render();scrollTo(0,0)});render();
 </script>
 </body>
