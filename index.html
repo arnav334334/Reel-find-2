@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cinetone – rate films and their soundtracks</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#fafafc;--cd:#fff;--tx:#18161f;--mu:#6c6a7a;--bd:#e8e6ef;--ac:#715CD4;--as:#715cd41a;color-scheme:light}
+:root[data-theme=dark]{--bg:#0e0d12;--cd:#17151d;--tx:#f2f1f7;--mu:#9a98aa;--bd:#2b2836;--as:#715cd433;color-scheme:dark}
+body{margin:0;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+a{color:inherit;text-decoration:none;cursor:pointer}a:hover{color:var(--ac)}
+small,.mu{color:var(--mu);font-size:13px}
+header{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px max(20px,calc(50% - 560px));background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd)}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.02em;margin-right:auto}.brand i{color:var(--ac);font-style:normal}
+input,select{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;max-width:100%}
+input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+#q{width:min(260px,100%)}
+.bt{font:inherit;background:var(--ac);color:#fff;border:0;border-radius:10px;padding:8px 14px;cursor:pointer}
+.bt.g,.ib{background:var(--cd);color:var(--tx);border:1px solid var(--bd)}.ib{border-radius:10px;padding:8px 12px;cursor:pointer;font:inherit}
+main{max-width:1120px;margin:0 auto;padding:24px 20px 80px}
+h1{font-size:clamp(26px,4vw,38px);line-height:1.15;letter-spacing:-.02em;margin:8px 0}h1 small{font-weight:400;font-size:.5em}
+h2{font-size:18px;margin:32px 0 8px}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.seg{display:inline-flex;background:var(--as);border-radius:12px;padding:3px}
+.seg a{padding:6px 16px;border-radius:9px;color:var(--mu)}.seg a.on{background:var(--cd);color:var(--ac);font-weight:600;box-shadow:0 1px 3px #0002}
+.chip{display:inline-block;border:1px solid var(--bd);border-radius:99px;padding:2px 12px;margin:0 6px 6px 0;font-size:13px;background:var(--cd);cursor:pointer}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:20px}
+.card{display:block;color:inherit}.card .cb{padding:8px 2px}.card b{display:block}
+.ph{aspect-ratio:2/3;border-radius:14px;display:flex;align-items:flex-end;padding:14px;color:#fff;font-weight:700;font-size:18px;line-height:1.2}
+.ph.sq{aspect-ratio:1;align-items:center;justify-content:center;font-size:44px}
+.pop{height:4px;background:var(--bd);border-radius:4px;margin:6px 0 2px;overflow:hidden}.pop i{display:block;height:100%;background:var(--ac)}
+.hero{display:grid;grid-template-columns:200px 1fr;gap:28px;align-items:start}
+.hero .ph{font-size:20px}
+@media(max-width:640px){.hero{grid-template-columns:1fr}.hero .ph{max-width:200px}}
+.panel{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:18px;margin-top:16px}
+.bar{display:flex;height:12px;border-radius:8px;overflow:hidden;gap:2px;background:var(--bd)}
+.b0{background:#7a2a3d}.b1{background:#d9534f}.b2{background:#e0a43a}.b3{background:#3fb28a}.b4{background:var(--ac)}
+.lg{display:flex;flex-wrap:wrap;gap:4px 16px;margin:8px 0 0;font-size:13px}.lg u{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.big{font-size:34px;font-weight:700;letter-spacing:-.02em}
+.rt{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.rt input{padding:0;accent-color:var(--ac);flex:1;min-width:140px}.rt b{min-width:130px}
+.row{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--bd)}.row>div:nth-child(2){flex:1;min-width:0}
+.mini{width:110px}.row .sl{width:92px;padding:5px 8px}
+@media(max-width:640px){.mini{display:none}}
+.av{width:var(--s,48px);height:var(--s,48px);border-radius:50%;background:var(--as);color:var(--ac);display:inline-flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;flex:none}.av img{width:100%;height:100%;object-fit:cover}
+.pr{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+dialog{border:1px solid var(--bd);border-radius:16px;background:var(--cd);color:var(--tx);width:min(420px,92vw)}
+dialog label{display:block;margin-bottom:12px;font-size:13px;color:var(--mu)}dialog select{width:100%;margin-top:4px}
+#chat{position:fixed;right:16px;bottom:16px;width:min(360px,calc(100vw - 32px));background:var(--cd);border:1px solid var(--bd);border-radius:16px;box-shadow:0 10px 40px #0003;z-index:9;display:flex;flex-direction:column}
+#chat[hidden]{display:none}#msgs{padding:14px;max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+#msgs p{margin:0;padding:8px 12px;border-radius:12px;background:var(--as);max-width:90%;font-size:14px}#msgs p.u{background:var(--ac);color:#fff;align-self:flex-end}
+#chat form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd)}#chat input{flex:1;min-width:0}
+footer{text-align:center;padding:24px;color:var(--mu);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<a class="brand" href="#/">Cine<i>tone</i></a>
+<input id="q" type="search" placeholder="Search films or actors" aria-label="Search" oninput="S.q=this.value;go()">
+<button class="ib" onclick="dlg()">Filters</button>
+<button class="ib" onclick="$('#chat').hidden=!$('#chat').hidden">Ask the finder</button>
+<a class="ib" id="fw" href="#/following">Following</a>
+<button class="ib" onclick="th()" aria-label="Toggle light and dark mode">◐</button>
+</header>
+<main id="app"></main>
+<footer>Sample data for layout and logic. Connect the CFG adapters below to your IMDb-linked and Spotify sources for live metadata, images, box office and streaming.</footer>
+<dialog id="dlg"><form method="dialog"></form></dialog>
+<aside id="chat" hidden><div id="msgs"><p>Ask in plain words, like “Ryan Gosling films directed by Damien Chazelle” or “sci-fi films from Legendary Pictures”.</p></div><form onsubmit="ask2(event)"><input id="ci" placeholder="What are you looking for?" aria-label="Ask"><button class="bt">Send</button></form></aside>
+<script>
+/* CFG: plug live sources in here. img(name,kind) should return an IMDb image URL for actors/directors
+   and a Spotify image URL for musicians. Fetch films from your IMDb-linked API (e.g. TMDB), tracks and
+   labels from Spotify, box office from Box Office Mojo / The Numbers, streaming from TMDB watch providers
+   (JustWatch). Do this behind a small server: API keys must not ship inside a public HTML file. */
+const CFG={img:(n,k)=>""};
+const SP=["Prime Video","Apple TV","YouTube Movies"];
+// film: id,title,year,genres,director,cast,company,label,box office $M,ratings,mean; tracks: name,artist,genre,ratings,mean
+const F=[
+{id:"the-dark-knight",t:"The Dark Knight",y:2008,g:["Action","Crime","Drama"],d:"Christopher Nolan",a:["Christian Bale","Heath Ledger","Michael Caine"],co:"Legendary Pictures",lb:"WaterTower Music",bo:1006,n:12400,m:8.9,tr:[["Why So Serious?","Hans Zimmer, James Newton Howard","Film Score",4100,8.7],["A Dark Knight","Hans Zimmer, James Newton Howard","Film Score",3200,8.5],["Aggressive Expansion","Hans Zimmer, James Newton Howard","Orchestral",1500,7.9]]},
+{id:"inception",t:"Inception",y:2010,g:["Sci-Fi","Action","Thriller"],d:"Christopher Nolan",a:["Leonardo DiCaprio","Joseph Gordon-Levitt","Tom Hardy"],co:"Legendary Pictures",lb:"Reprise Records",bo:839,n:11200,m:8.6,tr:[["Time","Hans Zimmer","Film Score",5200,9.1],["Dream Is Collapsing","Hans Zimmer","Orchestral",2600,8.4],["Mombasa","Hans Zimmer","Film Score",1800,8.2]]},
+{id:"interstellar",t:"Interstellar",y:2014,g:["Sci-Fi","Drama","Adventure"],d:"Christopher Nolan",a:["Matthew McConaughey","Anne Hathaway","Michael Caine"],co:"Legendary Pictures",lb:"WaterTower Music",bo:773,n:9800,m:8.4,tr:[["Cornfield Chase","Hans Zimmer","Ambient",4800,9.0],["Stay","Hans Zimmer","Film Score",3900,9.2],["No Time for Caution","Hans Zimmer","Orchestral",3100,9.0]]},
+{id:"la-la-land",t:"La La Land",y:2016,g:["Musical","Romance","Drama"],d:"Damien Chazelle",a:["Ryan Gosling","Emma Stone"],co:"Summit Entertainment",lb:"Interscope Records",bo:448,n:6400,m:7.6,tr:[["City of Stars","Ryan Gosling, Emma Stone","Jazz",5600,8.6],["Another Day of Sun","La La Land Cast","Pop",2900,7.8],["Mia & Sebastian’s Theme","Justin Hurwitz","Jazz",1700,8.5]]},
+{id:"whiplash",t:"Whiplash",y:2014,g:["Drama","Music"],d:"Damien Chazelle",a:["Miles Teller","J.K. Simmons"],co:"Bold Films",lb:"Verve Records",bo:49,n:5200,m:8.5,tr:[["Whiplash","Justin Hurwitz","Jazz",1900,8.8],["Caravan","Justin Hurwitz","Jazz",1200,8.3]]},
+{id:"drive",t:"Drive",y:2011,g:["Crime","Thriller","Drama"],d:"Nicolas Winding Refn",a:["Ryan Gosling","Carey Mulligan"],co:"Bold Films",lb:"Lakeshore Records",bo:81,n:3300,m:7.3,tr:[["Nightcall","Kavinsky","Synthwave",4400,8.7],["A Real Hero","College, Electric Youth","Synthpop",3600,8.9],["Under Your Spell","Desire","Synthpop",1100,8.0]]}
+];
+const $=s=>document.querySelector(s),BK=["Unbearable","Horrible","Decent","Good","Masterpiece"];
+const L=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},W=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let U=L("u",{}),FO=L("fo",[]);
+const S0={q:"",g:"",a:"",d:"",c:"",l:"",m:""};let S={...S0},M="f",TG="",TS="o";
+const seed=(n,m)=>{const w=[...Array(20)].map((_,i)=>Math.exp(-Math.pow(((i+1)/2-m)/1.6,2)/2)),s=w.reduce((a,b)=>a+b);return w.map(x=>Math.round(n*x/s))};
+F.forEach(f=>{f.c=seed(f.n,f.m);f.tr=f.tr.map((t,i)=>({id:f.id+"."+i,t:t[0],ar:t[1].split(", "),g:t[2],c:seed(t[3],t[4]),f}))});
+const TT=F.flatMap(f=>f.tr);
+const cls=v=>BK[v<=1?0:v<=5?1:v<=6?2:v<=8?3:4];
+const eff=(c,k)=>{c=[...c];if(U[k])c[U[k]*2-1]++;return c};
+const st=c=>{const b=[0,0,0,0,0];let n=0,s=0;c.forEach((x,i)=>{const v=(i+1)/2;n+=x;s+=x*v;b[BK.indexOf(cls(v))]+=x});return{n,avg:n?s/n:0,b}};
+const sf=f=>st(eff(f.c,f.id)),stt=t=>st(eff(t.c,t.id)),sa=f=>st(f.tr.reduce((a,t)=>{const c=eff(t.c,t.id);return a.map((x,i)=>x+c[i])},Array(20).fill(0)));
+const mx=a=>Math.max(...a),pp=(n,m)=>Math.round(n/m*100);
+const mF=()=>mx(F.map(f=>sf(f).n)),mA=()=>mx(F.map(f=>sa(f).n)),mT=()=>mx(TT.map(t=>stt(t).n));
+const pt=s=>s.b.map((x,i)=>x?Math.round(x/s.n*100)+"% "+BK[i].toLowerCase():"").filter(Boolean).join(", ");
+const dist=s=>`<div class="bar" title="${pt(s)}">${s.b.map((x,i)=>`<i class="b${i}" style="flex:${x}"></i>`).join("")}</div><p class="lg">${s.b.map((x,i)=>x?`<span><u class="b${i}"></u>${Math.round(x/s.n*100)}% voted ${BK[i].toLowerCase()}</span>`:"").join("")}</p>`;
+const av=(n,s=48)=>{const u=CFG.img(n);return `<span class="av" style="--s:${s}px">${u?`<img src="${u}" alt="">`:n.split(" ").map(w=>w[0]).slice(0,2).join("")}</span>`};
+const bg=f=>`linear-gradient(150deg,hsl(${230+f.t.length*13%90} 42% 34%),#715CD4)`;
+const art=(f,o)=>`<div class="ph${o?" sq":""}" style="background:${bg(f)}">${o?"♪":f.t}</div>`;
+const pl=n=>`<a href="#/person/${encodeURIComponent(n)}">${n}</a>`;
+const OP=[...Array(20)].map((_,i)=>(i+1)/2);
+const sv=(k,v)=>{if(!v)return;U[k]=+v;W("u",U);render()};
+const rs=k=>`<select class="sl" aria-label="Rate" onchange="sv('${k}',this.value)"><option value="">${U[k]?"You: "+U[k]:"Rate"}</option>${OP.map(v=>`<option ${U[k]==v?"selected":""}>${v}</option>`).join("")}</select>`;
+const fol=n=>{FO=FO.includes(n)?FO.filter(x=>x!=n):[...FO,n];W("fo",FO);render()};
+const ent=()=>{const u=a=>[...new Set(a)].sort();return{g:u(F.flatMap(f=>f.g)),a:u(F.flatMap(f=>f.a)),d:u(F.map(f=>f.d)),c:u(F.map(f=>f.co)),l:u(F.map(f=>f.lb)),m:u(TT.map(t=>t.g))}};
+const fl=()=>F.filter(f=>(!S.q||(f.t+f.d+f.a.join()).toLowerCase().includes(S.q.toLowerCase()))&&(!S.g||f.g.includes(S.g))&&(!S.a||f.a.includes(S.a))&&(!S.d||f.d==S.d)&&(!S.c||f.co==S.c)&&(!S.l||f.lb==S.l)&&(!S.m||f.tr.some(t=>t.g==S.m)));
+const go=()=>{location.hash.length>2?location.hash="#/":render()};
+const th=()=>{const r=document.documentElement,v=r.dataset.theme=="dark"?"light":"dark";r.dataset.theme=v;try{localStorage.t=v}catch(e){}};
+function dlg(){const E=ent();$("#dlg form").innerHTML=[["g","Genre"],["a","Actor"],["d","Director"],["c","Production company"],["l","Music label"],["m","Music genre"]].map(([k,n])=>`<label>${n}<select onchange="S.${k}=this.value;go()"><option value="">Any</option>${E[k].map(x=>`<option ${S[k]==x?"selected":""}>${x}</option>`).join("")}</select></label>`).join("")+`<p class="mu">Combine any filters, for example a director with an actor to find a duo.</p><button type="button" class="bt g" onclick="S={...S0};dlg();go()">Reset</button> <button class="bt" value="close">Done</button>`;$("#dlg").showModal()}
+function ask(q){let t=q.toLowerCase().replace(/sci.?fi|science fiction/g,"sci-fi"),n=0;const E=ent();
+if(!/^(also|and|add)\b/.test(t))S={...S0};
+for(const k in E){const x=E[k].find(x=>{const l=x.toLowerCase(),a=[l];if(k=="a"||k=="d")a.push(l.split(" ").pop());if(k=="c"||k=="l")a.push(l.split(" ")[0]);return a.some(w=>w.length>2&&new RegExp("\\b"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b").test(t))});if(x){S[k]=x;n++}}
+if(!n){const f=F.find(f=>t.includes(f.t.toLowerCase()));if(f){location.hash="#/film/"+f.id;return "Opening "+f.t+"."}return "I couldn’t match that. Try a genre, actor, director, studio or music label."}
+$("#q").value="";M="f";go();const R=fl();return R.length?`Found ${R.length}: ${R.map(f=>f.t).join(", ")}.`:"No film matches all of those. Try removing one filter."}
+function ask2(e){e.preventDefault();const v=$("#ci").value.trim();if(!v)return;$("#ci").value="";const m=$("#msgs");m.insertAdjacentHTML("beforeend",`<p class="u"></p>`);m.lastChild.textContent=v;m.insertAdjacentHTML("beforeend",`<p></p>`);m.lastChild.textContent=ask(v);m.scrollTop=1e9}
+const card=(f,o)=>{const s=o?sa(f):sf(f),p=pp(s.n,o?mA():mF());return `<a class="card" href="#/film/${f.id}${o?"/ost":""}">${art(f,o)}<div class="cb"><b>${o?f.t+" (Soundtrack)":f.t}</b><small>${f.y}, ${o?f.lb:f.g.join(", ")}</small><div class="pop"><i style="width:${p}%"></i></div><small>Popularity ${p}%${o?" · Score "+s.avg.toFixed(1):""}</small></div></a>`};
+function home(){const R=fl().sort((a,b)=>sf(b).n-sf(a).n),o=M=="s";
+return `<div class="top"><div class="seg"><a class="${o?"":"on"}" onclick="M='f';render()">Films</a><a class="${o?"on":""}" onclick="M='s';render()">Soundtracks</a></div><div>${Object.entries(S).filter(([k,v])=>v&&k!="q").map(([k,v])=>`<span class="chip" onclick="S.${k}='';render()">${v} ✕</span>`).join("")}</div></div>${R.length?`<div class="grid">${R.map(f=>card(f,o)).join("")}</div>`:`<p class="mu">No results. Open Filters to loosen your search.</p>`}`}
+function film(id,v){const f=F.find(x=>x.id==id);if(!f)return home();const o=v=="ost",s=sf(f),a=sa(f),G=[...new Set(f.tr.map(t=>t.g))];
+const seg=`<div class="seg"><a class="${o?"":"on"}" href="#/film/${id}">Movie</a><a class="${o?"on":""}" href="#/film/${id}/ost">Soundtrack</a></div>`;
+if(!o){const bo=f.bo>=1000?"$"+(f.bo/1000).toFixed(2)+" billion":"$"+f.bo+" million";
+return `<div class="hero">${art(f)}<div>${seg}<h1>${f.t} <small>${f.y}</small></h1><p>${f.g.map(g=>`<span class="chip" onclick="S={...S0,g:'${g}'};go()">${g}</span>`).join("")}</p><p class="mu">Directed by ${pl(f.d)}<br>Starring ${f.a.map(pl).join(", ")}<br>Produced by <a onclick="S={...S0,c:'${f.co}'};go()">${f.co}</a></p>
+<div class="panel"><small>Worldwide box office</small><div class="big">${bo}</div><small>Source: Box Office Mojo (sample figure)</small></div>
+<div class="panel"><small>Where to watch legally (rent or buy)</small><p style="margin:6px 0 0">${SP.map(x=>`<span class="chip">${x}</span>`).join("")}</p><small>Availability varies by country.</small></div></div></div>
+<div class="panel"><b>What people think</b> <small>${s.n.toLocaleString()} ratings · Popularity ${pp(s.n,mF())}% of the most rated film</small><div style="margin-top:12px">${dist(s)}</div></div>
+<div class="panel"><b>Your rating</b><div class="rt" style="margin-top:10px"><input type="range" min=".5" max="10" step=".5" value="${U[f.id]||7.5}" aria-label="Your rating" oninput="this.nextElementSibling.textContent=this.value+' · '+cls(+this.value)"><b>${U[f.id]||7.5} · ${cls(U[f.id]||7.5)}</b><button class="bt" onclick="sv('${f.id}',this.parentNode.firstElementChild.value)">${U[f.id]?"Update rating":"Save rating"}</button></div></div>`}
+let T=f.tr.filter(t=>!TG||t.g==TG);T=[...T].sort((a,b)=>TS=="g"?a.g.localeCompare(b.g):TS=="r"?stt(b).avg-stt(a).avg:TS=="p"?stt(b).n-stt(a).n:0);
+return `<div class="hero">${art(f,1)}<div>${seg}<h1>${f.t} (Original Motion Picture Soundtrack)</h1><p class="mu">Label: <a onclick="S={...S0,l:'${f.lb}'};go()">${f.lb}</a> · ${f.tr.length} tracks</p>
+<div class="panel"><small>Album score, averaged from all track ratings</small><div class="big">${a.avg.toFixed(1)}<small> / 10</small></div><small>Popularity ${pp(a.n,mA())}% of the most rated soundtrack</small></div></div></div>
+<div class="top" style="margin-top:28px"><div>${["",...G].map(g=>`<span class="chip ${TG==g?"on":""}" onclick="TG='${g}';render()">${g||"All genres"}</span>`).join("")}</div><select aria-label="Sort tracks" onchange="TS=this.value;render()">${[["o","Track order"],["g","Sort by genre"],["r","Sort by rating"],["p","Sort by popularity"]].map(([k,n])=>`<option value="${k}" ${TS==k?"selected":""}>${n}</option>`).join("")}</select></div>
+${T.map(t=>{const x=stt(t);return `<div class="row"><div>${t.f.tr.indexOf(t)+1}</div><div><div>${t.t}</div><small>${t.ar.map(pl).join(", ")} · ${t.g}</small></div><div class="mini">${dist({...x,b:x.b}).split("<p")[0]}</div><small title="Popularity relative to the most rated song">${pp(x.n,mT())}%</small>${rs(t.id)}</div>`}).join("")}`}
+function person(n){const w=[...F.filter(f=>f.d==n||f.a.includes(n)).map(f=>({t:f.t+" ("+f.y+")",h:"#/film/"+f.id,s:sf(f),k:"Film"})),...TT.filter(t=>t.ar.includes(n)).map(t=>({t:t.t,h:"#/film/"+t.f.id+"/ost",s:stt(t),k:"Track from "+t.f.t}))];
+const r=[F.some(f=>f.d==n)&&"Director",F.some(f=>f.a.includes(n))&&"Actor",TT.some(t=>t.ar.includes(n))&&"Artist"].filter(Boolean).join(", "),on=FO.includes(n);
+const ls=a=>a.slice(0,3).map(x=>`<a class="row" href="${x.h}"><div><div>${x.t}</div><small>${x.k}</small></div><small>★ ${x.s.avg.toFixed(1)} · ${x.s.n.toLocaleString()} ratings</small></a>`).join("");
+return `<div class="pr">${av(n,88)}<div><h1 style="margin:0">${n}</h1><span class="mu">${r}</span></div><button class="bt ${on?"g":""}" style="margin-left:auto" onclick="fol('${n.replace(/'/g,"\\'")}')">${on?"Following":"Follow"}</button></div><h2>Best rated</h2>${ls([...w].sort((a,b)=>b.s.avg-a.s.avg))}<h2>Most popular</h2>${ls([...w].sort((a,b)=>b.s.n-a.s.n))}`}
+const following=()=>`<h1>Following</h1>${FO.length?FO.map(n=>`<a class="row" href="#/person/${encodeURIComponent(n)}">${av(n)}<div>${n}</div></a>`).join(""):`<p class="mu">You aren’t following anyone yet. Open an actor, director or artist page and choose Follow.</p>`}`;
+function render(){const h=location.hash.slice(2).split("/").map(decodeURIComponent);$("#fw").textContent="Following"+(FO.length?" ("+FO.length+")":"");
+$("#app").innerHTML=h[0]=="film"?film(h[1],h[2]):h[0]=="person"?person(h[1]):h[0]=="following"?following():home()}
+try{document.documentElement.dataset.theme=localStorage.t||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")}catch(e){}
+addEventListener("hashchange",()=>{render();scrollTo(0,0)});render();
+</script>
+</body>
+</html>
